@@ -3,12 +3,12 @@ package Server;
 /**
  * Created by martin on 2015-11-30.
  */
-public class SellObject {
+public class SellObject implements Product{
     private String productName;
     private double price;
     private String seller;
 
-    public String getProductName() {
+    public String getName() {
         return productName;
     }
 
@@ -25,4 +25,5 @@ public class SellObject {
         price = p;
         seller = s;
     }
+
 }

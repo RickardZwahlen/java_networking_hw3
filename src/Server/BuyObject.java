@@ -3,12 +3,12 @@ package Server;
 /**
  * Created by martin on 2015-11-30.
  */
-public class BuyObject {
+public class BuyObject implements Product{
     private String productName;
     private double price;
     private String buyer;
 
-    public String getProductName() {
+    public String getName() {
         return productName;
     }
 
