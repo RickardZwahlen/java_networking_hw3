@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("serial")
-public class BankImpl  Bank {
+public class BankImpl implements Bank {
     private String bankName;
     private Map<String, Account> accounts = new HashMap<>();
 
