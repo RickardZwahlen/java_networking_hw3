@@ -9,7 +9,7 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class BankImpl implements Bank {
     private String bankName;
-    private Map<String, Account> accounts = new HashMap<>();
+    private Map<String, Account> accounts = new HashMap<String, Account>();
 
     public BankImpl(String bankName) throws RemoteException {
         super();

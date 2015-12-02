@@ -3,6 +3,8 @@ package Server;
 import Bank.Bank;
 import Bank.BankImpl;
 
+import java.rmi.AlreadyBoundException;
+import java.rmi.registry.Registry;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -20,20 +22,8 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
     ArrayList<BuyObject> buyObjects = new ArrayList<BuyObject>();
     ArrayList<SellObject> sellObjects = new ArrayList<SellObject>();
 
-    public ServerImplementation(String servername) throws RemoteException {
-        try {
-            bankobj = new BankImpl(servername);
-            // Register the newly created object at rmiregistry.
-            try {
-                LocateRegistry.getRegistry(1099).list();
-            } catch (RemoteException e) {
-                LocateRegistry.createRegistry(1099);
-            }
-            Naming.rebind(servername, bankobj);
-            System.out.println(bankobj + " is ready.");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public ServerImplementation() throws RemoteException {
+
     }
 
     @Override
@@ -78,4 +68,28 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         }
         return null;
     }
+
+    @Override
+    public String hello() throws RemoteException {
+        System.out.println("client asks for a hello, Hello!");
+        return "hello client";
+    }
+
+    public static void main(String [] args ) throws RemoteException {
+        try {
+            ServerImplementation serverObject = new ServerImplementation();
+            // Register the newly created object at rmiregistry.
+            try {
+                LocateRegistry.getRegistry(1099).list();
+            } catch (RemoteException e) {
+                LocateRegistry.createRegistry(1099);
+            }
+            Naming.rebind("Server", serverObject);
+            System.out.println(serverObject + " is ready.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 }
