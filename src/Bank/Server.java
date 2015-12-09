@@ -1,12 +1,11 @@
 package Bank;
-
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 
 public class Server {
     private static final String USAGE = "java bankrmi.Server <bank_rmi_url>";
-    private static final String BANK = "rmi://localhost/Nordea";
+    private static final String BANK = "Nordea";
 
     public Server(String bankName) {
         try {

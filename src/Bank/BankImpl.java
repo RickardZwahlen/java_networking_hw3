@@ -1,13 +1,12 @@
 package Bank;
 
-
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("serial")
-public class BankImpl implements Bank {
+public class BankImpl extends UnicastRemoteObject implements Bank {
     private String bankName;
     private Map<String, Account> accounts = new HashMap<String, Account>();
 
