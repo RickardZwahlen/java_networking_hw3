@@ -4,6 +4,7 @@ import Bank.Bank;
 import Bank.BankImpl;
 
 import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
 import java.rmi.registry.Registry;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -28,7 +29,12 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
 
     @Override
     public void registerSellObject(String name, double price, String seller) {
-        SellObject sell = new SellObject(name, price, seller);
+        SellObject sell = null;
+        try {
+            sell = new SellObject(name, price, seller);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         sellObjects.add(sell);
         for (BuyObject b : buyObjects){
             if (b.getName().equals(name) && b.getPrice()<=price){
@@ -47,7 +53,12 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
 
     @Override
     public void registerBuyObject(String name, double price, String buyer) {
-        BuyObject buy = new BuyObject(name, price, buyer);
+        BuyObject buy = null;
+        try {
+            buy = new BuyObject(name, price, buyer);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         buyObjects.add(buy);
 
         for (SellObject s : sellObjects){
@@ -70,9 +81,25 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
     }
 
     @Override
-    public String hello() throws RemoteException {
+    public void hello(String name) throws RemoteException {
         System.out.println("client asks for a hello, Hello!");
-        return "hello client";
+
+
+        try {
+            Registry registry = LocateRegistry.getRegistry(1099);
+
+            ClientInterface stub = (ClientInterface) registry.lookup("client");
+            System.out.println("will try to contact the client");
+            stub.hello();
+            System.out.println("Done notifying the client");
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (NotBoundException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     public static void main(String [] args ) throws RemoteException {

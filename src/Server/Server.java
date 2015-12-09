@@ -13,5 +13,5 @@ public interface Server extends Remote {
     public void registerSellObject(String name, double price, String seller)throws RemoteException;
     public void registerBuyObject(String name, double price, String buyer)throws RemoteException;
     public SellObject findProduct(String name)throws RemoteException;
-    public String hello() throws RemoteException;
+    public void hello(String name) throws RemoteException;
 }
