@@ -19,7 +19,7 @@ public class BuyObject extends UnicastRemoteObject implements Product{
         return price;
     }
 
-    public String getSeller() {
+    public String getBuyer() {
         return buyer;
     }
 
