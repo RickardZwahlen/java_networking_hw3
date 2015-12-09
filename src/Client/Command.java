@@ -6,7 +6,8 @@ package Client;
 public class Command {
     private String userName;
     private float amount;
-    private Client.BankCommandName bankCommandName;
+    private Client.CommandName bankCommandName;
+    private String other;
 
     public String getUserName() {
         return userName;
@@ -16,13 +17,25 @@ public class Command {
         return amount;
     }
 
-    public Client.BankCommandName getBankCommandName() {
+    public Client.CommandName getBankCommandName() {
         return bankCommandName;
     }
 
-    private Command(Client.BankCommandName bankCommandName, String userName, float amount) {
+    public Command(Client.CommandName bankCommandName, String userName, float amount) {
         this.bankCommandName = bankCommandName;
         this.userName = userName;
         this.amount = amount;
+    }
+
+    public Command(Client.CommandName bankCommandName, String userName, float amount, String other) {
+        this.bankCommandName = bankCommandName;
+        this.userName = userName;
+        this.amount = amount;
+        this.other = other;
+    }
+
+    public String getOther()
+    {
+        return other;
     }
 }

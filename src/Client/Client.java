@@ -2,10 +2,13 @@ package Client;
 
 
 import Bank.Account;
+
 import Bank.RejectedException;
 import Server.SellObject;
 
+import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 
 
 public class Client implements ClientInterface{
@@ -13,18 +16,16 @@ public class Client implements ClientInterface{
     private Bank.Client bankClient;
     Account account;
     Bank.Bank bankobj;
-    private String bankname;
+    private String bankname = BANKNAME;
     String clientname;
     String password;
 
-    public static enum commands {
-        sell, wish, search, list, logout;
-    };
 
-    public static enum BankCommandName
+    public enum CommandName
     {
-        newAccount, getAccount, deleteAccount, deposit, withdraw, balance, quit, help, list;
-    };
+        sell, wish, search, productList, logout, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, quit, help, list;
+    }
+
 
     @Override
     public void notifySale(SellObject product)
@@ -41,13 +42,32 @@ public class Client implements ClientInterface{
 
     public Client()
     {
-
+        try {
+            try {
+                LocateRegistry.getRegistry(1099).list();
+            } catch (RemoteException e) {
+                LocateRegistry.createRegistry(1099);
+            }
+            System.out.println("Trying to connect to bank: " + bankname);
+            bankobj = (Bank.Bank) Naming.lookup(bankname);
+        } catch (Exception e) {
+            System.out.println("The runtime failed: " + e.getMessage());
+            System.exit(0);
+        }
+        System.out.println("Connected to bank: " + bankname);
     }
 
     public Client(String clientname, String password)
     {
         this.clientname = clientname;
         this.password = password;
+        try
+        {
+            account = bankobj.getAccount(clientname);
+        } catch (RemoteException e)
+        {
+            e.printStackTrace();
+        }
     }
 
 
@@ -56,7 +76,7 @@ public class Client implements ClientInterface{
 
     public void printCommandList()
     {
-        System.out.println(java.util.Arrays.asList(commands.values()));
+        System.out.println(java.util.Arrays.asList(Client.CommandName.values()));
     }
 
     public void execute(Command command) throws RemoteException, RejectedException
@@ -79,7 +99,7 @@ public class Client implements ClientInterface{
             case quit:
                 System.exit(0);
             case help:
-                for (BankCommandName commandName : BankCommandName.values()) {
+                for (CommandName commandName : CommandName.values()) {
                     System.out.println(commandName);
                 }
                 return;
@@ -100,11 +120,12 @@ public class Client implements ClientInterface{
         switch (command.getBankCommandName()) {
             case newAccount:
                 clientname = userName;
-                bankobj.newAccount(userName);
+                account = bankobj.newAccount(userName);
                 return;
             case deleteAccount:
                 clientname = userName;
                 bankobj.deleteAccount(userName);
+                account = null;
                 return;
         }
 

@@ -17,7 +17,7 @@ public class Server {
                 LocateRegistry.createRegistry(1099);
             }
             Naming.rebind(bankName, bankobj);
-            System.out.println(bankobj + " is ready.");
+            System.out.println(bankName + "  " + bankobj + " is ready.");
         } catch (Exception e) {
             e.printStackTrace();
         }
