@@ -4,10 +4,8 @@ package Client;
 import Bank.Account;
 import Bank.RejectedException;
 import Server.SellObject;
-import Util.Commands;
 
 import java.rmi.RemoteException;
-import java.util.Scanner;
 
 
 public class Client implements ClientInterface{
