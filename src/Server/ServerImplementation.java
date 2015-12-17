@@ -3,6 +3,7 @@ package Server;
 import Bank.Bank;
 import Bank.Account;
 import Bank.RejectedException;
+import Client.ClientInterface;
 
 import java.rmi.NotBoundException;
 import java.rmi.registry.Registry;
@@ -112,6 +113,9 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
 
     }
 
+
+
+
     @Override
     public void registerBuyObject(String name, double price, String buyer) throws RemoteException {
         BuyObject buy = null;
@@ -126,7 +130,7 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
     }
 
     @Override
-    public SellObject[] findProduct(String name) {
+    public ArrayList<SellObject> findProduct(String name) {
         ArrayList<SellObject> list = new ArrayList<SellObject>();
 
         for (SellObject s : sellObjects) {
@@ -134,7 +138,18 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
                 list.add(s);
             }
         }
-        return (SellObject[]) list.toArray();
+        return list;
+    }
+
+    @Override
+    public ArrayList<SellObject> listProducts() throws RemoteException
+    {
+        ArrayList<SellObject> returnList = new ArrayList<SellObject>();
+        for(SellObject k: sellObjects)
+        {
+            returnList.add(k);
+        }
+        return returnList;
     }
 
     public SellObject[] findProduct(String name, double maxPrice) {
@@ -156,7 +171,7 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         try {
             Registry registry = LocateRegistry.getRegistry(1099);
 
-            ClientInterface stub = (ClientInterface) registry.lookup("client");
+            ClientInterface stub = (ClientInterface) registry.lookup(name);
             System.out.println("will try to contact the client");
             stub.hello();
             System.out.println("Done notifying the client");

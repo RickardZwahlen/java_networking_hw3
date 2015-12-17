@@ -5,13 +5,18 @@ import Bank.Account;
 
 import Bank.RejectedException;
 import Server.SellObject;
+import Server.Server;
 
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 
 
-public class Client implements ClientInterface{
+public class Client extends UnicastRemoteObject implements ClientInterface{
     private final String BANKNAME = "Nordea";
     private Bank.Client bankClient;
     Account account;
@@ -19,11 +24,12 @@ public class Client implements ClientInterface{
     private String bankname = BANKNAME;
     String clientname;
     String password;
+    Server server;
 
 
     public enum CommandName
     {
-        sell, wish, search, productList, logout, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, quit, help, list;
+        sell, wish, search, productList, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, quit, help, list;
     }
 
 
@@ -39,9 +45,15 @@ public class Client implements ClientInterface{
 
     }
 
-
-    public Client()
+    @Override
+    public void hello()
     {
+        System.out.println("Server successfully contacted client.");
+    }
+
+    public Client() throws RemoteException
+    {
+        super();
         try {
             try {
                 LocateRegistry.getRegistry(1099).list();
@@ -55,10 +67,40 @@ public class Client implements ClientInterface{
             System.exit(0);
         }
         System.out.println("Connected to bank: " + bankname);
+        String name = "client";
+        try {
+
+            // Register the newly created object at rmiregistry.
+            try {
+                LocateRegistry.getRegistry(1099).list();
+            } catch (RemoteException e) {
+                LocateRegistry.createRegistry(1099);
+            }
+            Naming.rebind(name, this);
+            System.out.println(this.toString() + " is ready.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Registry registry = LocateRegistry.getRegistry(1099);
+            server = (Server) registry.lookup("Server");
+
+            System.out.println("will preform system call");
+            server.hello(name);
+            System.out.println("done with remote call. said hello :)");
+
+
+
+        } catch (NotBoundException e)
+        {
+            e.printStackTrace();
+        }
     }
 
-    public Client(String clientname, String password)
+    public Client(String clientname, String password) throws RemoteException
     {
+        super();
         this.clientname = clientname;
         this.password = password;
         try
@@ -86,16 +128,6 @@ public class Client implements ClientInterface{
         }
 
         switch (command.getBankCommandName()) {
-            case list:
-                try {
-                    for (String accountHolder : bankobj.listAccounts()) {
-                        System.out.println(accountHolder);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return;
-                }
-                return;
             case quit:
                 System.exit(0);
             case help:
@@ -133,7 +165,7 @@ public class Client implements ClientInterface{
         Account acc = bankobj.getAccount(userName);
         if (acc == null) {
             System.out.println("No account for " + userName);
-            return;
+            System.exit(0);
         } else {
             account = acc;
             clientname = userName;
@@ -155,16 +187,28 @@ public class Client implements ClientInterface{
                 System.out.println("balance: $" + account.getBalance());
                 break;
             case sell:
-                System.out.println("not implemented");
+                System.out.println(command.getOther() + " put up for sale for " + command.getAmount());
+                server.registerSellObject(command.getOther(), command.getAmount(), command.getUserName());
                 break;
             case wish:
-                System.out.println("not implemented");
+                System.out.println(command.getOther() + " put up on wishlist for " + command.getAmount());
+                server.registerBuyObject(command.getOther(), command.getAmount(), command.getUserName());
                 break;
             case search:
-                System.out.println("not implemented");
+
+                ArrayList<SellObject> products = server.findProduct(command.getOther());
+                for(SellObject s: products)
+                {
+                    System.out.println(s.getName() + "\t" + s.getPrice());
+                }
                 break;
             case list:
-                System.out.println("not implemented");
+//                System.out.println(command.getOther() + " put up on wishlist for " + command.getAmount());
+                products = server.listProducts();
+                for(SellObject s: products)
+                {
+                    System.out.println(s.getName() + "\t" + s.getPrice());
+                }
                 break;
             default:
                 System.out.println("Illegal command");
@@ -203,6 +247,12 @@ public class Client implements ClientInterface{
     public void setPassword(String password)
     {
         this.password = password;
+    }
+
+    public String toString()
+    {
+
+        return "Client: " + this.getClientname();
     }
 }
 

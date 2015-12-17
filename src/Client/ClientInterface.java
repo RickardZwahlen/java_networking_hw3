@@ -3,10 +3,14 @@ package Client;
 import Server.Product;
 import Server.SellObject;
 
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
 /**
  * Created by martin on 2015-11-30.
  */
-public interface ClientInterface {
-    public void notifySale(SellObject product);
-    public void notifyBuy(SellObject product);
+public interface ClientInterface extends Remote{
+    public void notifySale(SellObject product) throws RemoteException;
+    public void notifyBuy(SellObject product) throws RemoteException;
+    public void hello() throws RemoteException;
 }

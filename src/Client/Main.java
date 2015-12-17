@@ -11,7 +11,14 @@ public class Main
     public static void main(String [] args){
 
         String input = "";
-        Client client = new Client();
+        Client client = null;
+        try
+        {
+            client = new Client();
+        } catch (RemoteException e)
+        {
+            e.printStackTrace();
+        }
         System.out.println("Welcome to Plocket, type \"create\" to make a new account, or \"login\" to log in");
         Scanner scanner = new Scanner(System.in);
         input = scanner.nextLine();
@@ -96,7 +103,7 @@ public class Main
                         c = new Command(Client.CommandName.search, client.getClientname(),(float)0.00, input);
                         break;
                     case "list":
-                        c = new Command(Client.CommandName.list, client.getClientname(),(float)0.00, input.split(" ")[1]);
+                        c = new Command(Client.CommandName.list, client.getClientname(),(float)0.00);
                         break;
                     case "logout":
                         c = new Command(Client.CommandName.quit, client.getClientname(), (float)0.00,"");

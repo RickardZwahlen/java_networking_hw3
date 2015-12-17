@@ -4,6 +4,8 @@ package Server;
  * Created by Martin on 2015-12-02.
  */
 
+import Client.ClientInterface;
+
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -11,7 +13,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-public class ClientTest extends UnicastRemoteObject implements ClientInterface{
+public class ClientTest extends UnicastRemoteObject implements ClientInterface
+{
 
     private ClientTest() throws RemoteException {
         super();
