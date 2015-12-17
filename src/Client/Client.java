@@ -204,10 +204,11 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
                 break;
             case list:
 //                System.out.println(command.getOther() + " put up on wishlist for " + command.getAmount());
-                products = server.listProducts();
-                for(SellObject s: products)
+                String[] productsList = server.listProducts();
+//                products = server.listProducts();
+                for(String s: productsList)
                 {
-                    System.out.println(s.getName() + "\t" + s.getPrice());
+                    System.out.println(s);
                 }
                 break;
             default:
