@@ -15,6 +15,11 @@ public class Main
         System.out.println("Welcome to Plocket, type \"create\" to make a new account, or \"login\" to log in");
         Scanner scanner = new Scanner(System.in);
         input = scanner.nextLine();
+        if(input.startsWith("quit"))
+        {
+            return;
+        }
+
         if(input.equals("create"))
         {
             System.out.println("Select username:");
@@ -42,7 +47,17 @@ public class Main
             client.setClientname(scanner.nextLine());
             System.out.print("Password:");
             client.setPassword(scanner.nextLine());
-
+            Command c = new Command(Client.CommandName.getAccount, client.getClientname(),(float)0.00, client.getPassword());
+            try
+            {
+                client.execute(c);
+            } catch (RemoteException e)
+            {
+                e.printStackTrace();
+            } catch (RejectedException e)
+            {
+                e.printStackTrace();
+            }
         }
         else
         {
@@ -66,16 +81,22 @@ public class Main
                 switch(input.split(" ")[0])
                 {
                     case "sell":
-                        c = new Command(Client.CommandName.sell, client.getClientname(),Float.parseFloat(input.split(" ")[2]), input.split(" ")[1]);
+                        System.out.println("Please input: <item name> <price>");
+                        input = scanner.nextLine();
+                        c = new Command(Client.CommandName.sell, client.getClientname(),Float.parseFloat(input.split(" ")[1]), input.split(" ")[0]);
                         break;
                     case "wish":
-                        c = new Command(Client.CommandName.wish, client.getClientname(),Float.parseFloat(input.split(" ")[2]), input.split(" ")[1]);
+                        System.out.println("Please input: <item name> <price>");
+                        input = scanner.nextLine();
+                        c = new Command(Client.CommandName.wish, client.getClientname(),Float.parseFloat(input.split(" ")[1]), input.split(" ")[0]);
                         break;
                     case "search":
-                        c = new Command(Client.CommandName.search, client.getClientname(),(float)0.00, input.split(" ")[1]);
+                        System.out.println("Search for: ");
+                        input = scanner.nextLine();
+                        c = new Command(Client.CommandName.search, client.getClientname(),(float)0.00, input);
                         break;
                     case "list":
-                        c = new Command(Client.CommandName.sell, client.getClientname(),(float)0.00, input.split(" ")[1]);
+                        c = new Command(Client.CommandName.list, client.getClientname(),(float)0.00, input.split(" ")[1]);
                         break;
                     case "logout":
                         c = new Command(Client.CommandName.quit, client.getClientname(), (float)0.00,"");

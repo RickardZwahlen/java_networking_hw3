@@ -139,6 +139,8 @@ public class Client implements ClientInterface{
             clientname = userName;
         }
 
+//        sell, wish, search, productList, logout, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, quit, help, list;
+
         switch (command.getBankCommandName()) {
             case getAccount:
                 System.out.println(account);
@@ -151,6 +153,18 @@ public class Client implements ClientInterface{
                 break;
             case balance:
                 System.out.println("balance: $" + account.getBalance());
+                break;
+            case sell:
+                System.out.println("not implemented");
+                break;
+            case wish:
+                System.out.println("not implemented");
+                break;
+            case search:
+                System.out.println("not implemented");
+                break;
+            case list:
+                System.out.println("not implemented");
                 break;
             default:
                 System.out.println("Illegal command");
