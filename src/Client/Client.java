@@ -14,6 +14,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Random;
 
 
 public class Client extends UnicastRemoteObject implements ClientInterface{
@@ -29,7 +30,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
 
     public enum CommandName
     {
-        sell, wish, search, productList, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, quit, help, list;
+        sell, wish, buy, search, productList, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, quit, help, list;
     }
 
 
@@ -67,7 +68,8 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
             System.exit(0);
         }
         System.out.println("Connected to bank: " + bankname);
-        String name = "client";
+        Random random = new Random();
+        String name = "client" + random.nextInt(100);
         try {
 
             // Register the newly created object at rmiregistry.
@@ -189,6 +191,9 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
             case sell:
                 System.out.println(command.getOther() + " put up for sale for " + command.getAmount());
                 server.registerSellObject(command.getOther(), command.getAmount(), command.getUserName());
+                break;
+            case buy: //TODO
+                server.buyObject(command.getOther(), command.getUserName());
                 break;
             case wish:
                 System.out.println(command.getOther() + " put up on wishlist for " + command.getAmount());

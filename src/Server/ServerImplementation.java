@@ -130,6 +130,22 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
     }
 
     @Override
+    public synchronized void buyObject(String name, String buyer) throws RemoteException
+    {
+        SellObject s;
+        for(int i=0; i<sellObjects.size(); i++)
+        {
+            s = sellObjects.get(i);
+            if(s.getName().equalsIgnoreCase(name))
+            {
+                performTransaction(buyer, s.getSeller(), s);
+                sellObjects.remove(s);
+                return;
+            }
+        }
+    }
+
+    @Override
     public ArrayList<SellObject> findProduct(String name) {
         ArrayList<SellObject> list = new ArrayList<SellObject>();
 

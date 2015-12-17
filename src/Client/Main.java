@@ -93,9 +93,14 @@ public class Main
                         c = new Command(Client.CommandName.sell, client.getClientname(),Float.parseFloat(input.split(" ")[1]), input.split(" ")[0]);
                         break;
                     case "wish":
-                        System.out.println("Please input: <item name> <price>");
+                        System.out.println("Please input: <item name> <max price>");
                         input = scanner.nextLine();
                         c = new Command(Client.CommandName.wish, client.getClientname(),Float.parseFloat(input.split(" ")[1]), input.split(" ")[0]);
+                        break;
+                    case "buy":
+                        System.out.println("Please input: <item name>");
+                        input = scanner.nextLine();
+                        c = new Command(Client.CommandName.buy, client.getClientname(),(float)0.00, input.split(" ")[0]);
                         break;
                     case "search":
                         System.out.println("Search for: ");
