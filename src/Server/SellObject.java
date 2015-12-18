@@ -11,15 +11,15 @@ public class SellObject extends UnicastRemoteObject implements Product{
     private double price;
     private String seller;
 
-    public String getName() {
+    public String getName() throws RemoteException{
         return productName;
     }
 
-    public double getPrice() {
+    public double getPrice() throws RemoteException {
         return price;
     }
 
-    public String getSeller() {
+    public String getSeller() throws RemoteException {
         return seller;
     }
 

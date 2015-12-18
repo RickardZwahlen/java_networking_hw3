@@ -56,12 +56,12 @@ public class ClientTest extends UnicastRemoteObject implements ClientInterface
     }
 
     @Override
-    public void notifySale(SellObject s) throws RemoteException {
+    public void notifySale(Product s) throws RemoteException {
         System.out.println("i managed to sell " + s.getName() +" for " + s.getPrice());
     }
 
     @Override
-    public void notifyBuy(SellObject s) throws RemoteException {
+    public void notifyBuy(Product s) throws RemoteException {
         System.out.println("i managed to buy " + s.getName() +" for " + s.getPrice());
     }
 

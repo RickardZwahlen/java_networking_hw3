@@ -2,6 +2,7 @@ package Client;
 
 
 import Bank.Account;
+import Server.Product;
 
 import Bank.RejectedException;
 import Server.SellObject;
@@ -30,20 +31,20 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
 
     public enum CommandName
     {
-        sell, wish, buy, search, productList, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, quit, help, list;
+        sell, wish, buy, search, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, quit, help, list;
     }
 
 
     @Override
-    public void notifySale(SellObject product)
+    public void notifySale(Product product) throws RemoteException
     {
-
+        System.out.println(clientname + " sold a " + product.getName() + " for " + product.getPrice() + ":-");
     }
 
     @Override
-    public void notifyBuy(SellObject product)
+    public void notifyBuy(Product product) throws RemoteException
     {
-
+        System.out.println(clientname + " bought a " + product.getName() + " for " + product.getPrice() + ":-");
     }
 
     @Override
@@ -52,24 +53,8 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         System.out.println("Server successfully contacted client.");
     }
 
-    public Client() throws RemoteException
+    public void Setup() throws RemoteException
     {
-        super();
-        try {
-            try {
-                LocateRegistry.getRegistry(1099).list();
-            } catch (RemoteException e) {
-                LocateRegistry.createRegistry(1099);
-            }
-            System.out.println("Trying to connect to bank: " + bankname);
-            bankobj = (Bank.Bank) Naming.lookup(bankname);
-        } catch (Exception e) {
-            System.out.println("The runtime failed: " + e.getMessage());
-            System.exit(0);
-        }
-        System.out.println("Connected to bank: " + bankname);
-        Random random = new Random();
-        String name = "client" + random.nextInt(100);
         try {
 
             // Register the newly created object at rmiregistry.
@@ -78,7 +63,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
             } catch (RemoteException e) {
                 LocateRegistry.createRegistry(1099);
             }
-            Naming.rebind(name, this);
+            Naming.rebind(clientname, this);
             System.out.println(this.toString() + " is ready.");
         } catch (Exception e) {
             e.printStackTrace();
@@ -89,7 +74,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
             server = (Server) registry.lookup("Server");
 
             System.out.println("will preform system call");
-            server.hello(name);
+            server.hello(clientname);
             System.out.println("done with remote call. said hello :)");
 
 
@@ -105,6 +90,21 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         super();
         this.clientname = clientname;
         this.password = password;
+
+
+        try {
+            try {
+                LocateRegistry.getRegistry(1099).list();
+            } catch (RemoteException e) {
+                LocateRegistry.createRegistry(1099);
+            }
+            System.out.println("Trying to connect to bank: " + bankname);
+            bankobj = (Bank.Bank) Naming.lookup(bankname);
+        } catch (Exception e) {
+            System.out.println("The runtime failed: " + e.getMessage());
+            System.exit(0);
+        }
+        System.out.println("Connected to bank: " + bankname);
         try
         {
             account = bankobj.getAccount(clientname);
@@ -112,6 +112,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         {
             e.printStackTrace();
         }
+        Setup();
     }
 
 

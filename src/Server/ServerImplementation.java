@@ -79,6 +79,7 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
     }
 
     public void performTransaction(String buyer, String seller, SellObject product) throws RemoteException {
+
         if(checkClientExists(buyer) && checkClientExists(seller) && checkClientBalance(buyer)>product.getPrice()){
             Account buyerAccount = bankobj.getAccount(buyer);
             Account sellerAccount = bankobj.getAccount(seller);
@@ -88,6 +89,11 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
             } catch (RejectedException e) {
                 e.printStackTrace();
             }
+        }
+        else
+        {
+            System.out.println("Transaction cannot be performed. Check account balance.");
+            return;
         }
 
         try {
@@ -146,7 +152,8 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
     }
 
     @Override
-    public ArrayList<SellObject> findProduct(String name) {
+    public ArrayList<SellObject> findProduct(String name) throws RemoteException
+    {
         ArrayList<SellObject> list = new ArrayList<SellObject>();
 
         for (SellObject s : sellObjects) {
@@ -168,7 +175,8 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         return returnList.toArray(new String[returnList.size()]);
     }
 
-    public SellObject[] findProduct(String name, double maxPrice) {
+    public SellObject[] findProduct(String name, double maxPrice) throws RemoteException
+    {
 
         ArrayList<SellObject> list = new ArrayList<SellObject>();
 

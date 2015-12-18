@@ -12,13 +12,7 @@ public class Main
 
         String input = "";
         Client client = null;
-        try
-        {
-            client = new Client();
-        } catch (RemoteException e)
-        {
-            e.printStackTrace();
-        }
+
         System.out.println("Welcome to Plocket, type \"create\" to make a new account, or \"login\" to log in");
         Scanner scanner = new Scanner(System.in);
         input = scanner.nextLine();
@@ -30,16 +24,23 @@ public class Main
         if(input.equals("create"))
         {
             System.out.println("Select username:");
-            client.setClientname(scanner.nextLine());
+            String input1 = scanner.nextLine();
             System.out.print("Set password:");
-            client.setPassword(scanner.nextLine());
-
+            String input2 = scanner.nextLine();
+            try
+            {
+                client = new Client(input1, input2);
+            } catch (RemoteException e)
+            {
+                e.printStackTrace();
+            }
 //            String h = Commands.BankCommandName.newAccount.toString();
 //            client.
 //            Client.Command c = new Client.Command(Client.BankCommandName.newAccount, client.getClientname(), 0);
             try
             {
                 client.execute(new Command(Client.CommandName.newAccount, client.getClientname(), 0));
+                client.execute(new Command(Client.CommandName.deposit, client.getClientname(), 1000));
             } catch (RemoteException e)
             {
                 e.printStackTrace();
@@ -51,9 +52,17 @@ public class Main
         else if(input.equals("login"))
         {
             System.out.println("Username:");
-            client.setClientname(scanner.nextLine());
+            String input1 = scanner.nextLine();
             System.out.print("Password:");
-            client.setPassword(scanner.nextLine());
+            String input2 = scanner.nextLine();
+
+            try
+            {
+                client = new Client(input1, input2);
+            } catch (RemoteException e)
+            {
+                e.printStackTrace();
+            }
             Command c = new Command(Client.CommandName.getAccount, client.getClientname(),(float)0.00, client.getPassword());
             try
             {
@@ -112,6 +121,12 @@ public class Main
                         break;
                     case "logout":
                         c = new Command(Client.CommandName.quit, client.getClientname(), (float)0.00,"");
+                        break;
+                    case "deposit":
+                        c = new Command(Client.CommandName.deposit, client.getClientname(), Float.parseFloat(input.split(" ")[1]),"");
+                        break;
+                    case "balance":
+                        c = new Command(Client.CommandName.balance, client.getClientname(), (float)0.00,"");
                         break;
                 }
 
