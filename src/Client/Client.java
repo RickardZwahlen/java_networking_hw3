@@ -53,6 +53,12 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         System.out.println("Server successfully contacted client.");
     }
 
+    @Override
+    public void notifyWish(Product product) throws RemoteException
+    {
+        System.out.println("An item on your wishlist is available. Search for: " + product.getName());
+    }
+
     public void Setup() throws RemoteException
     {
         try {

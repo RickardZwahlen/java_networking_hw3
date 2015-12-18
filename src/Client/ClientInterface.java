@@ -13,4 +13,5 @@ public interface ClientInterface extends Remote{
     public void notifySale(Product product) throws RemoteException;
     public void notifyBuy(Product product) throws RemoteException;
     public void hello() throws RemoteException;
+    public void notifyWish(Product product) throws RemoteException;
 }

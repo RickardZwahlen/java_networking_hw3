@@ -38,13 +38,31 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         return a.getBalance();
     }
 
-    private void checkIfSaleAvailable() throws RemoteException {
-        for(BuyObject b : buyObjects){
-            SellObject[] list = findProduct(b.getName(), b.getPrice());
-            if(list.length != 0){
-                performTransaction(b.getBuyer(), list[0].getSeller(), list[0]);
+    private void checkIfSaleAvailable() throws RemoteException, NotBoundException
+    {
+        for(BuyObject s:buyObjects)
+        {
+            for(SellObject k:sellObjects)
+            {
+                if(s.getName().equalsIgnoreCase(k.getName()) && s.getPrice() >= k.getPrice())
+                {
+                    Registry registry = LocateRegistry.getRegistry(1099);
+                    ClientInterface wishStub = (ClientInterface) registry.lookup(s.getBuyer());
+
+
+                    wishStub.notifyWish(k);
+                    System.out.println("Notifying wishlist");
+
+                }
             }
         }
+
+//        for(BuyObject b : buyObjects){
+//            SellObject[] list = findProduct(b.getName(), b.getPrice());
+//            if(list.length != 0){
+//                performTransaction(b.getBuyer(), list[0].getSeller(), list[0]);
+//            }
+//        }
     }
 
     public ServerImplementation() throws RemoteException {
@@ -75,7 +93,13 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         }
         sellObjects.add(sell);
 
-        checkIfSaleAvailable();
+        try
+        {
+            checkIfSaleAvailable();
+        } catch (NotBoundException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public void performTransaction(String buyer, String seller, SellObject product) throws RemoteException {
@@ -132,7 +156,13 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         }
         buyObjects.add(buy);
 
-        checkIfSaleAvailable();
+        try
+        {
+            checkIfSaleAvailable();
+        } catch (NotBoundException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @Override

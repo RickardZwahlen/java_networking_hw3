@@ -69,4 +69,10 @@ public class ClientTest extends UnicastRemoteObject implements ClientInterface
     public void hello() throws RemoteException {
         System.out.println("hello");
     }
+
+    @Override
+    public void notifyWish(Product product) throws RemoteException
+    {
+
+    }
 }
