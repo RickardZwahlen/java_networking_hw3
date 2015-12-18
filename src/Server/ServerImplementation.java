@@ -152,16 +152,16 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
     }
 
     @Override
-    public ArrayList<SellObject> findProduct(String name) throws RemoteException
+    public String[] findProduct(String name) throws RemoteException
     {
-        ArrayList<SellObject> list = new ArrayList<SellObject>();
+        ArrayList<String> list = new ArrayList<String>();
 
         for (SellObject s : sellObjects) {
             if(s.getName().equals(name)){
-                list.add(s);
+                list.add(s.getName() + "\t" + s.getPrice() + ":-");
             }
         }
-        return list;
+        return list.toArray(new String[list.size()]);
     }
 
     @Override
@@ -170,7 +170,7 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         ArrayList<String> returnList = new ArrayList<String>();
         for(SellObject k: sellObjects)
         {
-            returnList.add(k.getName());
+            returnList.add(k.getName() + "\t" + k.getPrice() + ":-");
         }
         return returnList.toArray(new String[returnList.size()]);
     }
