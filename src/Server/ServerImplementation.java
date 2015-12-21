@@ -12,6 +12,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.sql.*;
 
 /**
  * Created by martin on 2015-11-30.
@@ -56,13 +57,6 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
                 }
             }
         }
-
-//        for(BuyObject b : buyObjects){
-//            SellObject[] list = findProduct(b.getName(), b.getPrice());
-//            if(list.length != 0){
-//                performTransaction(b.getBuyer(), list[0].getSeller(), list[0]);
-//            }
-//        }
     }
 
     public ServerImplementation() throws RemoteException {
@@ -81,6 +75,8 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         System.out.println("Connected to bank: " + bankname);
         if(checkClientExists("martin"))
             System.out.println(checkClientBalance("martin"));
+
+
     }
 
     @Override

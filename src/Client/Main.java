@@ -120,7 +120,7 @@ public class Main
                         c = new Command(Client.CommandName.list, client.getClientname(),(float)0.00);
                         break;
                     case "logout":
-                        c = new Command(Client.CommandName.quit, client.getClientname(), (float)0.00,"");
+                        c = new Command(Client.CommandName.logout, client.getClientname(), (float)0.00,"");
                         break;
                     case "deposit":
                         c = new Command(Client.CommandName.deposit, client.getClientname(), Float.parseFloat(input.split(" ")[1]),"");

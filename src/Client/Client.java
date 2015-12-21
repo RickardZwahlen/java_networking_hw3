@@ -31,7 +31,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
 
     public enum CommandName
     {
-        sell, wish, buy, search, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, quit, help, list;
+        sell, wish, buy, search, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, logout, help, list;
     }
 
 
@@ -137,7 +137,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         }
 
         switch (command.getBankCommandName()) {
-            case quit:
+            case logout:
                 System.exit(0);
             case help:
                 for (CommandName commandName : CommandName.values()) {
