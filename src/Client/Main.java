@@ -9,80 +9,78 @@ import java.util.Scanner;
 public class Main
 {
     public static void main(String [] args){
-
+        boolean loginSuccess = false;
         String input = "";
         Client client = null;
-
-        System.out.println("Welcome to Plocket, type \"create\" to make a new account, or \"login\" to log in");
         Scanner scanner = new Scanner(System.in);
-        input = scanner.nextLine();
-        if(input.startsWith("quit"))
+        while(!loginSuccess)
         {
-            return;
-        }
+            System.out.println("Welcome to Plocket, type \"create\" to make a new account, or \"login\" to log in");
 
-        if(input.equals("create"))
-        {
-            System.out.println("Select username:");
-            String input1 = scanner.nextLine();
-            System.out.print("Set password:");
-            String input2 = scanner.nextLine();
-            try
+            input = scanner.nextLine();
+            if (input.startsWith("quit"))
             {
-                client = new Client(input1, input2);
-            } catch (RemoteException e)
-            {
-                e.printStackTrace();
+                return;
             }
+
+            if (input.equals("create"))
+            {
+                System.out.println("Select username:");
+                String input1 = scanner.nextLine();
+                System.out.print("Set password:");
+                String input2 = scanner.nextLine();
+                try
+                {
+                    client = new Client(input1, input2);
+                } catch (RemoteException e)
+                {
+                    e.printStackTrace();
+                }
 //            String h = Commands.BankCommandName.newAccount.toString();
 //            client.
 //            Client.Command c = new Client.Command(Client.BankCommandName.newAccount, client.getClientname(), 0);
-            try
+                try
+                {
+                    boolean result = client.execute(new Command(Client.CommandName.newAccount, client.getClientname(), 0));
+                    loginSuccess = result;
+                    client.execute(new Command(Client.CommandName.deposit, client.getClientname(), 1000));
+                } catch (RemoteException e)
+                {
+                    e.printStackTrace();
+                } catch (RejectedException e)
+                {
+                    e.printStackTrace();
+                }
+            } else if (input.equals("login"))
             {
-                client.execute(new Command(Client.CommandName.newAccount, client.getClientname(), 0));
-                client.execute(new Command(Client.CommandName.deposit, client.getClientname(), 1000));
-            } catch (RemoteException e)
-            {
-                e.printStackTrace();
-            } catch (RejectedException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        else if(input.equals("login"))
-        {
-            System.out.println("Username:");
-            String input1 = scanner.nextLine();
-            System.out.print("Password:");
-            String input2 = scanner.nextLine();
+                System.out.println("Username:");
+                String input1 = scanner.nextLine();
+                System.out.print("Password:");
+                String input2 = scanner.nextLine();
 
-            try
-            {
-                client = new Client(input1, input2);
-            } catch (RemoteException e)
-            {
-                e.printStackTrace();
+                try
+                {
+                    client = new Client(input1, input2);
+                } catch (RemoteException e)
+                {
+                    e.printStackTrace();
+                }
+                Command c = new Command(Client.CommandName.getAccount, client.getClientname(), (float) 0.00, client.getPassword());
+                try
+                {
+                    boolean result = client.execute(c);
+                    loginSuccess = result;
+                } catch (RemoteException e)
+                {
+                    e.printStackTrace();
+                } catch (RejectedException e)
+                {
+                    e.printStackTrace();
+                }
             }
-            Command c = new Command(Client.CommandName.getAccount, client.getClientname(),(float)0.00, client.getPassword());
-            try
-            {
-                client.execute(c);
-            } catch (RemoteException e)
-            {
-                e.printStackTrace();
-            } catch (RejectedException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        else
-        {
-            System.exit(0);
         }
 
 
-        boolean loginSuccess = true;
-        /* login*/
         if(loginSuccess)
         {
             System.out.println("Login successful.");

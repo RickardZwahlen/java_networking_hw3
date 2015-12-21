@@ -130,10 +130,10 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         System.out.println(java.util.Arrays.asList(Client.CommandName.values()));
     }
 
-    public void execute(Command command) throws RemoteException, RejectedException
+    public boolean execute(Command command) throws RemoteException, RejectedException
     {
         if (command == null) {
-            return;
+            return false;
         }
 
         switch (command.getBankCommandName()) {
@@ -143,7 +143,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
                 for (CommandName commandName : CommandName.values()) {
                     System.out.println(commandName);
                 }
-                return;
+                return false;
 
         }
 
@@ -155,26 +155,29 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
 
         if (userName == null) {
             System.out.println("name is not specified");
-            return;
+            return false;
         }
 
         switch (command.getBankCommandName()) {
             case newAccount:
                 clientname = userName;
                 account = bankobj.newAccount(userName);
-                return;
+                //TODO actually create account at the server, check if it worked etc
+                return true;
+            //not used
             case deleteAccount:
                 clientname = userName;
                 bankobj.deleteAccount(userName);
                 account = null;
-                return;
+                return true;
         }
 
         // all further commands require a Account reference
         Account acc = bankobj.getAccount(userName);
+        //TODO login to the server
         if (acc == null) {
             System.out.println("No account for " + userName);
-            System.exit(0);
+            return false;
         } else {
             account = acc;
             clientname = userName;
@@ -226,6 +229,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
             default:
                 System.out.println("Illegal command");
         }
+        return false;
     }
 
 

@@ -17,4 +17,6 @@ public interface Server extends Remote {
     public String[] findProduct(String name)throws RemoteException;
     public String[] listProducts() throws RemoteException;
     public void hello(String name) throws RemoteException;
+    public boolean login(String username, String password) throws RemoteException;
+    public boolean create(String username, String password) throws RemoteException;
 }

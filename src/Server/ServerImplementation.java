@@ -24,26 +24,99 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
     private Bank bankobj;
 
     // JDBC driver name and database URL
-    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-    static final String DB_URL = "jdbc:mysql://localhost/EMP";
+    static final String JDBC_DRIVER = "org.postgresql.Driver";
+    static final String DB_URL = "jdbc:postgresql://localhost:5432/skrocket";
 
     //  Database credentials
-    static final String USER = "username";
-    static final String PASS = "password";
+    static final String USER = "postgres";
+    static final String PASS = "hejsan";
 
     static Connection conn = null;
     static Statement stmt = null;
+
+    private boolean loggedIn = false;
 
     ArrayList<BuyObject> buyObjects = new ArrayList<BuyObject>();
     ArrayList<SellObject> sellObjects = new ArrayList<SellObject>();
 
     private boolean checkClientExists(String clientName) throws RemoteException {
+        try
+        {
+            ResultSet rs = null;
+            stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT COUNT(username) AS total FROM Users WHERE username='" +clientName +  "'";
+            rs = stmt.executeQuery(sql);
+            rs.next();
+            //Check if there is a user with that username
+            if(rs.getInt("total")<1)
+            {
+                return false;
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+
         Account a = bankobj.getAccount(clientName);
+
         if (a == null){
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean login(String username, String password) throws RemoteException
+    {
+        ResultSet rs = null;
+        try
+        {
+            stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT COUNT(name) FROM Users WHERE name='" +username +  "' AND pass='" + password + "'";
+            rs = stmt.executeQuery(sql);
+            if(rs.getInt("total")!=1)
+            {
+                return false;
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
             return false;
         }
         return true;
     }
+
+    @Override
+    public boolean create(String username, String password) throws RemoteException
+    {
+        ResultSet rs = null;
+        try
+        {
+            if(password.length()<8)
+                return false;
+            stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT COUNT(name) FROM Users WHERE name='" +username +  "'";
+            rs = stmt.executeQuery(sql);
+            //Check if there is already a user with that username
+            if(rs.getInt("total")>0)
+            {
+                return false;
+            }
+            sql = "INSERT INTO Users (username, pass, soldobjects, boughtobjects) VALUES ('" + username + "', '" + password+ "'," + 0 +","+0+")";
+            stmt.executeQuery(sql);
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
 
     private double checkClientBalance(String clientName) throws RemoteException {
         Account a = bankobj.getAccount(clientName);
@@ -72,6 +145,7 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
 
     public ServerImplementation() throws RemoteException {
         try {
+
             try {
                 LocateRegistry.getRegistry(1099).list();
             } catch (RemoteException e) {
@@ -83,9 +157,6 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
             System.out.println("The runtime failed: " + e.getMessage());
             System.exit(0);
         }
-        System.out.println("Connected to bank: " + bankname);
-        if(checkClientExists("martin"))
-            System.out.println(checkClientBalance("martin"));
 
         //STEP 2: Register JDBC driver
         try
@@ -101,6 +172,11 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         {
             e.printStackTrace();
         }
+
+        System.out.println("Connected to bank: " + bankname);
+        if(checkClientExists("martin"))
+            System.out.println(checkClientBalance("martin"));
+
         //SELECT * FROM Customers WHERE ContactName='Thomas Hardy' OR Address='Mataderos 2312';
 
 
@@ -108,47 +184,16 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
 
     @Override
     public void registerSellObject(String name, double price, String seller) throws RemoteException {
-
-        SellObject sell = null;
-        try {
-            sell = new SellObject(name, price, seller);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        sellObjects.add(sell);
-
-        try
-        {
-            checkIfSaleAvailable();
-        } catch (NotBoundException e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    public void registerSellObjectSQL(String name, double price, String seller) throws RemoteException {
 //        INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
 //        VALUES ('Cardinal','Tom B. Erichsen','Skagen 21','Stavanger','4006','Norway');
-        ResultSet rs = null;
         try
         {
             stmt = conn.createStatement();
             String sql;
             sql = "INSERT INTO SellObjects (name, price, seller) VALUES ('" + name + "', " + price + ",'" + seller +"')";
-            rs = stmt.executeQuery(sql);
+            stmt.executeQuery(sql);
         } catch (SQLException e)
         {
-            try
-            {
-                rs.close();
-            } catch (SQLException e1)
-            {
-                e1.printStackTrace();
-            }
-            catch(NullPointerException e2)
-            {
-                e2.printStackTrace();
-            }
             e.printStackTrace();
         }
     }
@@ -161,7 +206,18 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
             try {
                 buyerAccount.withdraw((float)product.getPrice());
                 sellerAccount.deposit((float)product.getPrice());
+                stmt = conn.createStatement();
+                String sql;
+                sql = "Update Users SET soldobjects = soldobjects+1 WHERE username='" + seller + "'";
+                stmt.executeQuery(sql);
+
+                stmt = conn.createStatement();
+                sql = "Update Users SET boughtobjects = boughtobjects+1 WHERE username='" + buyer + "'";
+                stmt.executeQuery(sql);
             } catch (RejectedException e) {
+                e.printStackTrace();
+            } catch (SQLException e)
+            {
                 e.printStackTrace();
             }
         }
@@ -194,73 +250,22 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
 
     }
 
-
-
-
     @Override
     public void registerBuyObject(String name, double price, String buyer) throws RemoteException {
-        BuyObject buy = null;
-        try {
-            buy = new BuyObject(name, price, buyer);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        buyObjects.add(buy);
-
-        try
-        {
-            checkIfSaleAvailable();
-        } catch (NotBoundException e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-//    @Override
-    public void registerBuyObjectSQL(String name, double price, String buyer) throws RemoteException {
-//        INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
-//        VALUES ('Cardinal','Tom B. Erichsen','Skagen 21','Stavanger','4006','Norway');
-        ResultSet rs = null;
         try
         {
             stmt = conn.createStatement();
             String sql;
             sql = "INSERT INTO SellObjects (name, price, buyer) VALUES ('" + name + "', " + price + ",'" + buyer +"')";
-            rs = stmt.executeQuery(sql);
+            stmt.executeQuery(sql);
         } catch (SQLException e)
         {
-            try
-            {
-                rs.close();
-            } catch (SQLException e1)
-            {
-                e1.printStackTrace();
-            }
-            catch(NullPointerException e2)
-            {
-                e2.printStackTrace();
-            }
             e.printStackTrace();
         }
     }
 
     @Override
     public synchronized void buyObject(String name, String buyer) throws RemoteException
-    {
-        SellObject s;
-        for(int i=0; i<sellObjects.size(); i++)
-        {
-            s = sellObjects.get(i);
-            if(s.getName().equalsIgnoreCase(name))
-            {
-                performTransaction(buyer, s.getSeller(), s);
-                sellObjects.remove(s);
-                return;
-            }
-        }
-    }
-
-    public synchronized void buyObjectSQL(String name, String buyer) throws RemoteException
     {
         SellObject s;
         ResultSet rs = null;
@@ -280,7 +285,7 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
 
             performTransaction(buyer, seller, s);
             sql = "DELETE FROM SellObjects WHERE name='" + produtName + "' AND seller='" + seller + "'";
-            rs = stmt.executeQuery(sql);
+            stmt.executeQuery(sql);
 
         } catch (SQLException e)
         {
@@ -303,19 +308,6 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
 
     @Override
     public String[] findProduct(String name) throws RemoteException
-    {
-        ArrayList<String> list = new ArrayList<String>();
-
-        for (SellObject s : sellObjects) {
-            if(s.getName().equals(name)){
-                list.add(s.getName() + "\t" + s.getPrice() + ":-");
-            }
-        }
-        return list.toArray(new String[list.size()]);
-    }
-
-//    @Override
-    public String[] findProductSQL(String name) throws RemoteException
     {
         ArrayList<String> list = new ArrayList<String>();
         //STEP 4: Execute a query
@@ -361,8 +353,8 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         return list.toArray(new String[list.size()]);
     }
 
-
-    public String[] listProductsSQL() throws RemoteException
+    @Override
+    public String[] listProducts() throws RemoteException
     {
         ArrayList<String> list = new ArrayList<String>();
         //STEP 4: Execute a query
@@ -408,31 +400,6 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         return list.toArray(new String[list.size()]);
     }
 
-
-    @Override
-    public String[] listProducts() throws RemoteException
-    {
-        ArrayList<String> returnList = new ArrayList<String>();
-        for(SellObject k: sellObjects)
-        {
-            returnList.add(k.getName() + "\t" + k.getPrice() + ":-");
-        }
-        return returnList.toArray(new String[returnList.size()]);
-    }
-
-    public SellObject[] findProduct(String name, double maxPrice) throws RemoteException
-    {
-
-        ArrayList<SellObject> list = new ArrayList<SellObject>();
-
-        for (SellObject s : sellObjects) {
-            if(s.getName().equals(name) && s.getPrice()<=maxPrice){
-                list.add(s);
-            }
-        }
-        return (SellObject[]) list.toArray();
-    }
-
     @Override
     public void hello(String name) throws RemoteException {
         System.out.println("client asks for a hello, Hello!");
@@ -467,8 +434,14 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
 
             try
             {
-                stmt.close();
-                conn.close();
+                if(stmt!=null)
+                {
+                    stmt.close();
+                }
+                if(conn!=null)
+                {
+                    conn.close();
+                }
             } catch (SQLException e1)
             {
                 e1.printStackTrace();
