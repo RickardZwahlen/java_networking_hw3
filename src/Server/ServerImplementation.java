@@ -23,6 +23,17 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
     private static final String bankname = "Nordea";
     private Bank bankobj;
 
+    // JDBC driver name and database URL
+    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+    static final String DB_URL = "jdbc:mysql://localhost/EMP";
+
+    //  Database credentials
+    static final String USER = "username";
+    static final String PASS = "password";
+
+    static Connection conn = null;
+    static Statement stmt = null;
+
     ArrayList<BuyObject> buyObjects = new ArrayList<BuyObject>();
     ArrayList<SellObject> sellObjects = new ArrayList<SellObject>();
 
@@ -76,11 +87,28 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         if(checkClientExists("martin"))
             System.out.println(checkClientBalance("martin"));
 
+        //STEP 2: Register JDBC driver
+        try
+        {
+            Class.forName(JDBC_DRIVER);
+            //STEP 3: Open a connection
+            System.out.println("Connecting to database...");
+            conn = DriverManager.getConnection(DB_URL,USER,PASS);
+        } catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        //SELECT * FROM Customers WHERE ContactName='Thomas Hardy' OR Address='Mataderos 2312';
+
 
     }
 
     @Override
     public void registerSellObject(String name, double price, String seller) throws RemoteException {
+
         SellObject sell = null;
         try {
             sell = new SellObject(name, price, seller);
@@ -94,6 +122,33 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
             checkIfSaleAvailable();
         } catch (NotBoundException e)
         {
+            e.printStackTrace();
+        }
+    }
+
+    public void registerSellObjectSQL(String name, double price, String seller) throws RemoteException {
+//        INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
+//        VALUES ('Cardinal','Tom B. Erichsen','Skagen 21','Stavanger','4006','Norway');
+        ResultSet rs = null;
+        try
+        {
+            stmt = conn.createStatement();
+            String sql;
+            sql = "INSERT INTO SellObjects (name, price, seller) VALUES ('" + name + "', " + price + ",'" + seller +"')";
+            rs = stmt.executeQuery(sql);
+        } catch (SQLException e)
+        {
+            try
+            {
+                rs.close();
+            } catch (SQLException e1)
+            {
+                e1.printStackTrace();
+            }
+            catch(NullPointerException e2)
+            {
+                e2.printStackTrace();
+            }
             e.printStackTrace();
         }
     }
@@ -161,6 +216,34 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         }
     }
 
+//    @Override
+    public void registerBuyObjectSQL(String name, double price, String buyer) throws RemoteException {
+//        INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
+//        VALUES ('Cardinal','Tom B. Erichsen','Skagen 21','Stavanger','4006','Norway');
+        ResultSet rs = null;
+        try
+        {
+            stmt = conn.createStatement();
+            String sql;
+            sql = "INSERT INTO SellObjects (name, price, buyer) VALUES ('" + name + "', " + price + ",'" + buyer +"')";
+            rs = stmt.executeQuery(sql);
+        } catch (SQLException e)
+        {
+            try
+            {
+                rs.close();
+            } catch (SQLException e1)
+            {
+                e1.printStackTrace();
+            }
+            catch(NullPointerException e2)
+            {
+                e2.printStackTrace();
+            }
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public synchronized void buyObject(String name, String buyer) throws RemoteException
     {
@@ -177,6 +260,47 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         }
     }
 
+    public synchronized void buyObjectSQL(String name, String buyer) throws RemoteException
+    {
+        SellObject s;
+        ResultSet rs = null;
+        try
+        {
+            stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT * FROM SellObjects WHERE name='" + name + "' ORDER BY price ASC";
+            rs = stmt.executeQuery(sql);
+
+            rs.next();
+            //Retrieve by column name
+            float price  = rs.getFloat("price");
+            String produtName = rs.getString("name");
+            String seller = rs.getString("seller");
+            s = new SellObject(produtName, (double)price, seller);
+
+            performTransaction(buyer, seller, s);
+            sql = "DELETE FROM SellObjects WHERE name='" + produtName + "' AND seller='" + seller + "'";
+            rs = stmt.executeQuery(sql);
+
+        } catch (SQLException e)
+        {
+            try
+            {
+                rs.close();
+            } catch (SQLException e1)
+            {
+                e1.printStackTrace();
+            }
+            catch(NullPointerException e2)
+            {
+                e2.printStackTrace();
+            }
+            e.printStackTrace();
+        }
+
+
+    }
+
     @Override
     public String[] findProduct(String name) throws RemoteException
     {
@@ -189,6 +313,101 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         }
         return list.toArray(new String[list.size()]);
     }
+
+//    @Override
+    public String[] findProductSQL(String name) throws RemoteException
+    {
+        ArrayList<String> list = new ArrayList<String>();
+        //STEP 4: Execute a query
+        System.out.println("Creating statement...");
+        ResultSet rs = null;
+        try
+        {
+            stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT * FROM SellObjects WHERE name='" +name +  "' ORDER BY price ASC";
+            rs = stmt.executeQuery(sql);
+
+            //STEP 5: Extract data from result set
+            while(rs.next()){
+                //Retrieve by column name
+                float price  = rs.getFloat("price");
+                String produtName = rs.getString("name");
+                String seller = rs.getString("seller");
+
+
+                list.add(produtName + "\t" + price + ":- by " + seller);
+                //Display values
+//                System.out.print("Product: " + produtName);
+//                System.out.print(", Price: " + price);
+//                System.out.println(", Seller: " + seller);
+            }
+
+        } catch (SQLException e)
+        {
+            try
+            {
+                rs.close();
+            } catch (SQLException e1)
+            {
+                e1.printStackTrace();
+            }
+            catch(NullPointerException e2)
+            {
+                e2.printStackTrace();
+            }
+            e.printStackTrace();
+        }
+        return list.toArray(new String[list.size()]);
+    }
+
+
+    public String[] listProductsSQL() throws RemoteException
+    {
+        ArrayList<String> list = new ArrayList<String>();
+        //STEP 4: Execute a query
+        System.out.println("Creating statement...");
+        ResultSet rs = null;
+        try
+        {
+            stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT * FROM SellObjects ORDER BY seller ASC";
+            rs = stmt.executeQuery(sql);
+
+            //STEP 5: Extract data from result set
+            while(rs.next()){
+                //Retrieve by column name
+                float price  = rs.getFloat("price");
+                String produtName = rs.getString("name");
+                String seller = rs.getString("seller");
+
+
+                list.add(produtName + "\t" + price + ":- by " + seller);
+                //Display values
+//                System.out.print("Product: " + produtName);
+//                System.out.print(", Price: " + price);
+//                System.out.println(", Seller: " + seller);
+            }
+
+        } catch (SQLException e)
+        {
+            try
+            {
+                rs.close();
+            } catch (SQLException e1)
+            {
+                e1.printStackTrace();
+            }
+            catch(NullPointerException e2)
+            {
+                e2.printStackTrace();
+            }
+            e.printStackTrace();
+        }
+        return list.toArray(new String[list.size()]);
+    }
+
 
     @Override
     public String[] listProducts() throws RemoteException
@@ -245,6 +464,15 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
             Naming.rebind("Server", serverObject);
             System.out.println(serverObject + " is ready.");
         } catch (Exception e) {
+
+            try
+            {
+                stmt.close();
+                conn.close();
+            } catch (SQLException e1)
+            {
+                e1.printStackTrace();
+            }
             e.printStackTrace();
         }
 
