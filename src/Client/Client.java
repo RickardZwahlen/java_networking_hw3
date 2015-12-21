@@ -161,8 +161,9 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         switch (command.getBankCommandName()) {
             case newAccount:
                 clientname = userName;
+                if(!server.create(userName, password))
+                    return false;
                 account = bankobj.newAccount(userName);
-                //TODO actually create account at the server, check if it worked etc
                 return true;
             //not used
             case deleteAccount:

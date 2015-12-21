@@ -100,15 +100,16 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
                 return false;
             stmt = conn.createStatement();
             String sql;
-            sql = "SELECT COUNT(name) FROM Users WHERE name='" +username +  "'";
+            sql = "SELECT COUNT(username) AS total FROM Users WHERE username='" +username +  "'";
             rs = stmt.executeQuery(sql);
+            rs.next();
             //Check if there is already a user with that username
             if(rs.getInt("total")>0)
             {
                 return false;
             }
             sql = "INSERT INTO Users (username, pass, soldobjects, boughtobjects) VALUES ('" + username + "', '" + password+ "'," + 0 +","+0+")";
-            stmt.executeQuery(sql);
+            stmt.executeUpdate(sql);
         } catch (SQLException e)
         {
             e.printStackTrace();
@@ -191,7 +192,7 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
             stmt = conn.createStatement();
             String sql;
             sql = "INSERT INTO SellObjects (name, price, seller) VALUES ('" + name + "', " + price + ",'" + seller +"')";
-            stmt.executeQuery(sql);
+            stmt.executeUpdate(sql);
         } catch (SQLException e)
         {
             e.printStackTrace();
@@ -209,11 +210,11 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
                 stmt = conn.createStatement();
                 String sql;
                 sql = "Update Users SET soldobjects = soldobjects+1 WHERE username='" + seller + "'";
-                stmt.executeQuery(sql);
+                stmt.executeUpdate(sql);
 
                 stmt = conn.createStatement();
                 sql = "Update Users SET boughtobjects = boughtobjects+1 WHERE username='" + buyer + "'";
-                stmt.executeQuery(sql);
+                stmt.executeUpdate(sql);
             } catch (RejectedException e) {
                 e.printStackTrace();
             } catch (SQLException e)
@@ -285,7 +286,7 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
 
             performTransaction(buyer, seller, s);
             sql = "DELETE FROM SellObjects WHERE name='" + produtName + "' AND seller='" + seller + "'";
-            stmt.executeQuery(sql);
+            stmt.executeUpdate(sql);
 
         } catch (SQLException e)
         {

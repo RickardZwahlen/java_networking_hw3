@@ -41,9 +41,11 @@ public class Main
 //            Client.Command c = new Client.Command(Client.BankCommandName.newAccount, client.getClientname(), 0);
                 try
                 {
-                    boolean result = client.execute(new Command(Client.CommandName.newAccount, client.getClientname(), 0));
-                    loginSuccess = result;
-                    client.execute(new Command(Client.CommandName.deposit, client.getClientname(), 1000));
+                    loginSuccess = client.execute(new Command(Client.CommandName.newAccount, client.getClientname(), 0));
+                    if(!loginSuccess)
+                        System.out.println("Account creation failed. Username might be taken, or password too short.");
+                    else
+                        client.execute(new Command(Client.CommandName.deposit, client.getClientname(), 1000));
                 } catch (RemoteException e)
                 {
                     e.printStackTrace();
