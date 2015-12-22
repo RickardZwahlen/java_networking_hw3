@@ -5,6 +5,7 @@ import Bank.Account;
 import Bank.RejectedException;
 import Client.ClientInterface;
 
+import java.rmi.ConnectException;
 import java.rmi.NotBoundException;
 import java.rmi.registry.Registry;
 import java.rmi.Naming;
@@ -76,9 +77,11 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         {
             stmt = conn.createStatement();
             String sql;
-            sql = "SELECT COUNT(name) FROM Users WHERE name='" +username +  "' AND pass='" + password + "'";
+            sql = "SELECT COUNT(username) AS total FROM Users WHERE username='" +username +  "' AND pass='" + password + "'";
             rs = stmt.executeQuery(sql);
-            if(rs.getInt("total")!=1)
+            rs.next();
+            int tot = rs.getInt("total");
+            if(tot!=1)
             {
                 return false;
             }
@@ -126,6 +129,49 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
 
     private void checkIfSaleAvailable() throws RemoteException, NotBoundException
     {
+        ArrayList<String> list = new ArrayList<String>();
+        //STEP 4: Execute a query
+        ResultSet rs1, rs2 = null;
+        try
+        {
+            stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT * FROM BuyObjects";
+            rs1 = stmt.executeQuery(sql);
+
+            //STEP 5: Extract data from result set
+            while (rs1.next())
+            {
+                //Retrieve by column name
+                float price = rs1.getFloat("price");
+                String produtName = rs1.getString("productname");
+                String buyer = rs1.getString("buyer");
+
+                stmt = conn.createStatement();
+                sql = "SELECT * FROM SellObjects WHERE name='" + produtName + "' ORDER BY price ASC";
+                rs2 = stmt.executeQuery(sql);
+                if(rs2.next())
+                {
+                    Registry registry = LocateRegistry.getRegistry(1099);
+                    ClientInterface wishStub = (ClientInterface) registry.lookup(buyer);
+
+                    if(wishStub!=null)
+                        wishStub.notifyWish(new SellObject(rs2.getString("name"),(double)rs2.getFloat("price"),rs2.getString("seller")));
+                }
+
+
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (ConnectException e)
+        {
+            e.printStackTrace();
+        }
+
+
+
         for(BuyObject s:buyObjects)
         {
             for(SellObject k:sellObjects)
@@ -193,7 +239,11 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
             String sql;
             sql = "INSERT INTO SellObjects (name, price, seller) VALUES ('" + name + "', " + price + ",'" + seller +"')";
             stmt.executeUpdate(sql);
+            checkIfSaleAvailable();
         } catch (SQLException e)
+        {
+            e.printStackTrace();
+        } catch (NotBoundException e)
         {
             e.printStackTrace();
         }
@@ -257,9 +307,13 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         {
             stmt = conn.createStatement();
             String sql;
-            sql = "INSERT INTO SellObjects (name, price, buyer) VALUES ('" + name + "', " + price + ",'" + buyer +"')";
-            stmt.executeQuery(sql);
+            sql = "INSERT INTO BuyObjects (productname, price, buyer) VALUES ('" + name + "', " + price + ",'" + buyer +"')";
+            stmt.executeUpdate(sql);
+            checkIfSaleAvailable();
         } catch (SQLException e)
+        {
+            e.printStackTrace();
+        } catch (NotBoundException e)
         {
             e.printStackTrace();
         }

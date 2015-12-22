@@ -174,9 +174,10 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         }
 
         // all further commands require a Account reference
+        boolean login = server.login(userName, password);
         Account acc = bankobj.getAccount(userName);
         //TODO login to the server
-        if (acc == null) {
+        if (acc == null || login == false) {
             System.out.println("No account for " + userName);
             return false;
         } else {
@@ -189,7 +190,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         switch (command.getBankCommandName()) {
             case getAccount:
                 System.out.println(account);
-                break;
+                return true;
             case deposit:
                 account.deposit(command.getAmount());
                 break;
@@ -229,6 +230,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
                 break;
             default:
                 System.out.println("Illegal command");
+                return false;
         }
         return false;
     }
