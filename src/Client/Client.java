@@ -31,7 +31,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
 
     public enum CommandName
     {
-        sell, wish, buy, search, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, logout, help, list;
+        sell, wish, buy, search, newAccount, getAccount, deleteAccount, deposit, withdraw, balance, logout, help, list, info;
     }
 
 
@@ -196,6 +196,10 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
                 break;
             case withdraw:
                 account.withdraw(command.getAmount());
+                break;
+            case info:
+                String str =server.userInfo(userName);
+                System.out.println(str);
                 break;
             case balance:
                 System.out.println("balance: $" + account.getBalance());

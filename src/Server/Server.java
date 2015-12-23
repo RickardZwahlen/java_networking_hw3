@@ -19,4 +19,5 @@ public interface Server extends Remote {
     public void hello(String name) throws RemoteException;
     public boolean login(String username, String password) throws RemoteException;
     public boolean create(String username, String password) throws RemoteException;
+    public String userInfo(String username) throws RemoteException;
 }

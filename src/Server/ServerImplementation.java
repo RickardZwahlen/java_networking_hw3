@@ -121,6 +121,29 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
         return true;
     }
 
+    @Override
+    public String userInfo(String username) throws RemoteException
+    {
+        int bought=0, sold=0;
+        ResultSet rs = null;
+        try
+        {
+            stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT * FROM users WHERE username='" + username + "'";
+            rs = stmt.executeQuery(sql);
+            rs.next();
+            bought = rs.getInt("boughtobjects");
+            sold = rs.getInt("soldobjects");
+
+
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return username + "\tBought: " + bought + "\tSold: " + sold;
+    }
+
 
     private double checkClientBalance(String clientName) throws RemoteException {
         Account a = bankobj.getAccount(clientName);

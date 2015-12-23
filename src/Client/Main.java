@@ -128,6 +128,8 @@ public class Main
                     case "balance":
                         c = new Command(Client.CommandName.balance, client.getClientname(), (float)0.00,"");
                         break;
+                    case "info":
+                        c = new Command(Client.CommandName.info, client.getClientname(), (float)0.00);
                 }
 
                 try
