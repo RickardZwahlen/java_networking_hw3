@@ -62,7 +62,6 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
     public void Setup() throws RemoteException
     {
         try {
-
             // Register the newly created object at rmiregistry.
             try {
                 LocateRegistry.getRegistry(1099).list();
@@ -82,8 +81,6 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
             System.out.println("will preform system call");
             server.hello(clientname);
             System.out.println("done with remote call. said hello :)");
-
-
 
         } catch (NotBoundException e)
         {
@@ -120,9 +117,6 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         }
         Setup();
     }
-
-
-
 
 
     public void printCommandList()
@@ -165,7 +159,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
                     return false;
                 account = bankobj.newAccount(userName);
                 return true;
-            //not used
+            //not implemented
             case deleteAccount:
                 clientname = userName;
                 bankobj.deleteAccount(userName);
@@ -176,7 +170,6 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         // all further commands require a Account reference
         boolean login = server.login(userName, password);
         Account acc = bankobj.getAccount(userName);
-        //TODO login to the server
         if (acc == null || login == false) {
             System.out.println("No account for " + userName);
             return false;
@@ -208,7 +201,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
                 System.out.println(command.getOther() + " put up for sale for " + command.getAmount());
                 server.registerSellObject(command.getOther(), command.getAmount(), command.getUserName());
                 break;
-            case buy: //TODO
+            case buy:
                 server.buyObject(command.getOther(), command.getUserName());
                 break;
             case wish:
@@ -224,9 +217,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
                 }
                 break;
             case list:
-//                System.out.println(command.getOther() + " put up on wishlist for " + command.getAmount());
                 String[] productsList = server.listProducts();
-//                products = server.listProducts();
                 for(String s: productsList)
                 {
                     System.out.println(s);
@@ -238,8 +229,6 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         }
         return false;
     }
-
-
 
 
     public String getClientname()
@@ -267,7 +256,6 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
         return password;
     }
 
-
     public void setPassword(String password)
     {
         this.password = password;
@@ -275,7 +263,6 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
 
     public String toString()
     {
-
         return "Client: " + this.getClientname();
     }
 }

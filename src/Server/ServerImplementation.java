@@ -301,6 +301,7 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
             return;
         }
 
+        //Notify buyer and seller about purchase
         try {
             Registry registry = LocateRegistry.getRegistry(1099);
 
@@ -354,16 +355,18 @@ public class ServerImplementation extends UnicastRemoteObject implements Server 
             sql = "SELECT * FROM SellObjects WHERE name='" + name + "' ORDER BY price ASC";
             rs = stmt.executeQuery(sql);
 
-            rs.next();
-            //Retrieve by column name
-            float price  = rs.getFloat("price");
-            String produtName = rs.getString("name");
-            String seller = rs.getString("seller");
-            s = new SellObject(produtName, (double)price, seller);
+            if(rs.next())
+            {
+                //Retrieve by column name
+                String produtName = rs.getString("name");
+                float price  = rs.getFloat("price");
+                String seller = rs.getString("seller");
+                s = new SellObject(produtName, (double)price, seller);
 
-            performTransaction(buyer, seller, s);
-            sql = "DELETE FROM SellObjects WHERE name='" + produtName + "' AND seller='" + seller + "'";
-            stmt.executeUpdate(sql);
+                performTransaction(buyer, seller, s);
+                sql = "DELETE FROM SellObjects WHERE name='" + produtName + "' AND seller='" + seller + "'";
+                stmt.executeUpdate(sql);
+            }
 
         } catch (SQLException e)
         {
